@@ -18,6 +18,8 @@
 		43D7E2A91ADDA50900026E6B /* EGFlightInfoFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 43D7E2A71ADDA50900026E6B /* EGFlightInfoFactory.m */; };
 		43D7E2AC1ADDA89C00026E6B /* EGFlightInfoImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 43D7E2AA1ADDA89C00026E6B /* EGFlightInfoImpl.h */; };
 		43D7E2AD1ADDA89C00026E6B /* EGFlightInfoImpl.m in Sources */ = {isa = PBXBuildFile; fileRef = 43D7E2AB1ADDA89C00026E6B /* EGFlightInfoImpl.m */; };
+		43D7E2B11ADDB13300026E6B /* EGCardReaderManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 43D7E2AF1ADDB13300026E6B /* EGCardReaderManager.h */; };
+		43D7E2B21ADDB13300026E6B /* EGCardReaderManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 43D7E2B01ADDB13300026E6B /* EGCardReaderManager.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,6 +47,9 @@
 		43D7E2A71ADDA50900026E6B /* EGFlightInfoFactory.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EGFlightInfoFactory.m; sourceTree = "<group>"; };
 		43D7E2AA1ADDA89C00026E6B /* EGFlightInfoImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EGFlightInfoImpl.h; sourceTree = "<group>"; };
 		43D7E2AB1ADDA89C00026E6B /* EGFlightInfoImpl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EGFlightInfoImpl.m; sourceTree = "<group>"; };
+		43D7E2AE1ADDB01D00026E6B /* EGLoggingDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EGLoggingDelegate.h; sourceTree = "<group>"; };
+		43D7E2AF1ADDB13300026E6B /* EGCardReaderManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EGCardReaderManager.h; sourceTree = "<group>"; };
+		43D7E2B01ADDB13300026E6B /* EGCardReaderManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EGCardReaderManager.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -130,6 +135,9 @@
 				43D7E2A71ADDA50900026E6B /* EGFlightInfoFactory.m */,
 				43D7E2AA1ADDA89C00026E6B /* EGFlightInfoImpl.h */,
 				43D7E2AB1ADDA89C00026E6B /* EGFlightInfoImpl.m */,
+				43D7E2AE1ADDB01D00026E6B /* EGLoggingDelegate.h */,
+				43D7E2AF1ADDB13300026E6B /* EGCardReaderManager.h */,
+				43D7E2B01ADDB13300026E6B /* EGCardReaderManager.m */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -144,6 +152,7 @@
 				43D7E2A01ADD948200026E6B /* EGCardTransactionFactory.h in Headers */,
 				43D7E2A81ADDA50900026E6B /* EGFlightInfoFactory.h in Headers */,
 				43D7E2871ADD91D100026E6B /* EGCreditCardHandler.h in Headers */,
+				43D7E2B11ADDB13300026E6B /* EGCardReaderManager.h in Headers */,
 				43D7E2AC1ADDA89C00026E6B /* EGFlightInfoImpl.h in Headers */,
 				43D7E2A41ADD9E8600026E6B /* EGCardTransactionImpl.h in Headers */,
 			);
@@ -248,6 +257,7 @@
 			files = (
 				43D7E2A51ADD9E8600026E6B /* EGCardTransactionImpl.m in Sources */,
 				43D7E2AD1ADDA89C00026E6B /* EGFlightInfoImpl.m in Sources */,
+				43D7E2B21ADDB13300026E6B /* EGCardReaderManager.m in Sources */,
 				43D7E2A11ADD948200026E6B /* EGCardTransactionFactory.m in Sources */,
 				43D7E2A91ADDA50900026E6B /* EGFlightInfoFactory.m in Sources */,
 			);
@@ -435,6 +445,7 @@
 				43D7E2991ADD91D100026E6B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		43D7E29A1ADD91D100026E6B /* Build configuration list for PBXNativeTarget "EGCreditCardHandlerTests" */ = {
 			isa = XCConfigurationList;
@@ -443,6 +454,7 @@
 				43D7E29C1ADD91D100026E6B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
