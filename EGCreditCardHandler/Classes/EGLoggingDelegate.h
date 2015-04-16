@@ -11,6 +11,14 @@
 
 #import <Foundation/Foundation.h>
 
+typedef enum {
+	EGLogLevelError,
+	EGLogLevelWarn,
+	EGLogLevelInfo,
+	EGLogLevelDebug,
+	EGLogLevelVerbose
+} EGLogLevel;
+
 /**
  * This delegate will receive logging callbacks from the card reader framework, and should
  * output them as appropriate for your implementation.
@@ -18,29 +26,10 @@
 @protocol EGLoggingDelegate <NSObject>
 
 /**
- * Called when the card reader wished to log a message at the 'error' level.
+ * Called when the card reader wishes to output a log message.
  */
-- (void)logError:(NSString*)message;
+- (void)logMessageWithLevel:(EGLogLevel)level file:(const char *)file function:(const char *)function lineNumber:(NSUInteger)lineNumber format:(NSString*)format, ...;
 
-/**
- * Called when the card reader wished to log a message at the 'warning' level.
- */
-- (void)logWarning:(NSString*)message;
-
-/**
- * Called when the card reader wished to log a message at the 'info' level.
- */
-- (void)logInfo:(NSString*)message;
-
-/**
- * Called when the card reader wished to log a message at the 'debug' level.
- */
-- (void)logDebug:(NSString*)message;
-
-/**
- * Called when the card reader wished to log a message at the 'verbose' level.
- */
-- (void)logVerbose:(NSString*)message;
 
 @end
 

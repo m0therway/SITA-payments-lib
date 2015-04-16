@@ -128,6 +128,8 @@
 		43D7E29D1ADD924500026E6B /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				43D7E2AF1ADDB13300026E6B /* EGCardReaderManager.h */,
+				43D7E2B01ADDB13300026E6B /* EGCardReaderManager.m */,
 				43D7E29E1ADD948200026E6B /* EGCardTransactionFactory.h */,
 				43D7E29F1ADD948200026E6B /* EGCardTransactionFactory.m */,
 				43D7E2A21ADD9E8600026E6B /* EGCardTransactionImpl.h */,
@@ -137,8 +139,6 @@
 				43D7E2AA1ADDA89C00026E6B /* EGFlightInfoImpl.h */,
 				43D7E2AB1ADDA89C00026E6B /* EGFlightInfoImpl.m */,
 				43D7E2AE1ADDB01D00026E6B /* EGLoggingDelegate.h */,
-				43D7E2AF1ADDB13300026E6B /* EGCardReaderManager.h */,
-				43D7E2B01ADDB13300026E6B /* EGCardReaderManager.m */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
