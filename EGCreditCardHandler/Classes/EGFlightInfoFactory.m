@@ -11,7 +11,7 @@
 
 @implementation EGFlightInfoFactory
 
-- (id<EGFlightInfo>)flightInfoWithCompanyId:(NSInteger)companyId
++ (id<EGFlightInfo>)flightInfoWithCompanyId:(NSInteger)companyId
 									 crewId:(NSInteger)crewId
 								   deviceId:(NSString*)deviceId
 							  departureTime:(NSDate*)departureTime

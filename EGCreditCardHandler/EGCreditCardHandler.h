@@ -16,4 +16,7 @@ FOUNDATION_EXPORT const unsigned char EGCreditCardHandlerVersionString[];
 
 // In this header, you should import all the public headers of your framework using statements like #import <EGCreditCardHandler/PublicHeader.h>
 
-
+#import <EGCreditCardHandler/EGCardTransactionFactory.h>
+#import <EGCreditCardHandler/EGFlightInfoFactory.h>
+#import <EGCreditCardHandler/EGCardReaderManager.h>
+#import <EGCreditCardHandler/EGLoggingDelegate.h>

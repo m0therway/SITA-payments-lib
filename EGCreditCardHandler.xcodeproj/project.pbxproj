@@ -7,18 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		439FC7B11ADF478C00866AE4 /* EGLoggingDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 43D7E2AE1ADDB01D00026E6B /* EGLoggingDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		43D7E2871ADD91D100026E6B /* EGCreditCardHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 43D7E2861ADD91D100026E6B /* EGCreditCardHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		43D7E28D1ADD91D100026E6B /* EGCreditCardHandler.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 43D7E2811ADD91D100026E6B /* EGCreditCardHandler.framework */; };
 		43D7E2941ADD91D100026E6B /* EGCreditCardHandlerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 43D7E2931ADD91D100026E6B /* EGCreditCardHandlerTests.m */; };
-		43D7E2A01ADD948200026E6B /* EGCardTransactionFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 43D7E29E1ADD948200026E6B /* EGCardTransactionFactory.h */; };
+		43D7E2A01ADD948200026E6B /* EGCardTransactionFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 43D7E29E1ADD948200026E6B /* EGCardTransactionFactory.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		43D7E2A11ADD948200026E6B /* EGCardTransactionFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 43D7E29F1ADD948200026E6B /* EGCardTransactionFactory.m */; };
 		43D7E2A41ADD9E8600026E6B /* EGCardTransactionImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 43D7E2A21ADD9E8600026E6B /* EGCardTransactionImpl.h */; };
 		43D7E2A51ADD9E8600026E6B /* EGCardTransactionImpl.m in Sources */ = {isa = PBXBuildFile; fileRef = 43D7E2A31ADD9E8600026E6B /* EGCardTransactionImpl.m */; };
-		43D7E2A81ADDA50900026E6B /* EGFlightInfoFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 43D7E2A61ADDA50900026E6B /* EGFlightInfoFactory.h */; };
+		43D7E2A81ADDA50900026E6B /* EGFlightInfoFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 43D7E2A61ADDA50900026E6B /* EGFlightInfoFactory.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		43D7E2A91ADDA50900026E6B /* EGFlightInfoFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 43D7E2A71ADDA50900026E6B /* EGFlightInfoFactory.m */; };
 		43D7E2AC1ADDA89C00026E6B /* EGFlightInfoImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 43D7E2AA1ADDA89C00026E6B /* EGFlightInfoImpl.h */; };
 		43D7E2AD1ADDA89C00026E6B /* EGFlightInfoImpl.m in Sources */ = {isa = PBXBuildFile; fileRef = 43D7E2AB1ADDA89C00026E6B /* EGFlightInfoImpl.m */; };
-		43D7E2B11ADDB13300026E6B /* EGCardReaderManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 43D7E2AF1ADDB13300026E6B /* EGCardReaderManager.h */; };
+		43D7E2B11ADDB13300026E6B /* EGCardReaderManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 43D7E2AF1ADDB13300026E6B /* EGCardReaderManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		43D7E2B21ADDB13300026E6B /* EGCardReaderManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 43D7E2B01ADDB13300026E6B /* EGCardReaderManager.m */; };
 /* End PBXBuildFile section */
 
@@ -151,8 +152,9 @@
 			files = (
 				43D7E2A01ADD948200026E6B /* EGCardTransactionFactory.h in Headers */,
 				43D7E2A81ADDA50900026E6B /* EGFlightInfoFactory.h in Headers */,
-				43D7E2871ADD91D100026E6B /* EGCreditCardHandler.h in Headers */,
 				43D7E2B11ADDB13300026E6B /* EGCardReaderManager.h in Headers */,
+				439FC7B11ADF478C00866AE4 /* EGLoggingDelegate.h in Headers */,
+				43D7E2871ADD91D100026E6B /* EGCreditCardHandler.h in Headers */,
 				43D7E2AC1ADDA89C00026E6B /* EGFlightInfoImpl.h in Headers */,
 				43D7E2A41ADD9E8600026E6B /* EGCardTransactionImpl.h in Headers */,
 			);

@@ -7,7 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "EGLoggingDelegate.h"
 
 @protocol EGCardTransaction;
 @protocol EGFlightInfo;
@@ -20,19 +19,19 @@
 typedef void (^EGTransactionCallback)(NSError* error);
 
 /**
- * A singleton responsible for interacting with the card reader device.
+ * A manager responsible for interacting with the card reader device.
  */
 @interface EGCardReaderManager : NSObject
 
 /**
  * This delegate is responsible for providing logging facilities for the card reader.
  */
-@property(nonatomic,strong) id<EGLoggingDelegate> loggingDelegate;
+@property(nonatomic,readonly) id<EGLoggingDelegate> loggingDelegate;
 
 /**
- * The shared instance to use for interacting with the card reader device.
+ * Standard initializer.
  */
-+ (instancetype)sharedManager;
+- (instancetype)initWithLoggingDelegate:(id<EGLoggingDelegate>)loggingDelegate;
 
 /**
  * Requests that the card reader perform a swipe transaction.
