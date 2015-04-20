@@ -26,10 +26,11 @@ typedef void (^EGTransactionCallback)(NSError* error);
 /**
  * This delegate is responsible for providing logging facilities for the card reader.
  */
-@property(nonatomic,readonly) id<EGLoggingDelegate> loggingDelegate;
+@property(nonatomic, weak, readonly) id<EGLoggingDelegate> loggingDelegate;
 
 /**
- * Standard initializer.
+ * Standard initializer. NOTE: like all Objective-C initializers, this can return
+ * 'nil' in certain circumstances.
  */
 - (instancetype)initWithLoggingDelegate:(id<EGLoggingDelegate>)loggingDelegate;
 
