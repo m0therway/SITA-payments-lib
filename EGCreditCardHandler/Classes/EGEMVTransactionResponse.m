@@ -9,6 +9,13 @@
 #import "EGEMVTransactionResponse.h"
 #import <RBA_SDK/RBA_SDK.h>
 
+/*
+ * We want to use this long ugly method so these property names are
+ * checked at compile time, but we'll clean it up with a macro.
+ */
+
+#define PROP_NAME(arg) NSStringFromSelector(@selector(arg))
+
 @interface EGEMVTransactionResponse ()
 
 @property(nonatomic,copy) NSString* eMVTrack2Encrypted;
@@ -135,44 +142,44 @@
 	static dispatch_once_t onceToken;
 	dispatch_once(&onceToken, ^{
 		lookupTable = @{
-						@"1001"	:	@"nonEMVPinEntryRequired",	//Pin entry Required Flag. 0: Not required, 1: required
-						@"1002"	:	@"nonEMVSignatureRequired",	//Signature Required Flag. 0: Not required, 1: required
-						@"1003"	:	@"nonEMVConfirmationResponseCode",
-						@"1005"	:	@"nonEMVTransactionType",	//Transaction type. 00 = Purchase. 01 = refund.
-						@"1010"	:	@"nonEMVErrorResponseCode",
-						@"9000"	:	@"nonEMVCardPaymentCode",	//Card Payment Type. A = Debit. B = Credit.
-						@"9001"	:	@"nonEMVCardEntryCode",		//Card Entry Mode. C = Chip entry. D = Contactless EMV entry.
-						@"8A"	:	@"intermediateAuthorizationResponseCode",
-						@"95"	:	@"eMVTerminalVerificationResultsField",
-						@"4F"	:	@"eMVApplicationIdentifierField",
-						@"82"	:	@"eMVApplicationInterchangeProfileField",
-						@"84"	:	@"eMVDedicatedFileNameField",
-						@"9A"	:	@"eMVTransactionDateField",
-						@"9B"	:	@"eMVTransactionStatusInformationField",
-						@"9C"	:	@"eMVCryptogramTransactionTypeField",
-						@"5F28"	:	@"eMVIssuerCountryCodeField",
-						@"5F2A"	:	@"eMVTransactionCurrencyCodeField",
-						@"5F34"	:	@"eMVPanSequenceNumber",
-						@"9F02"	:	@"eMVTransactionAmountField",
-						@"9F07"	:	@"eMVApplicationUsageControlField",
-						@"9F08"	:	@"eMVApplicationVersionNumberField",
-						@"9F0D"	:	@"eMVIssuerActionCodeDefaultField",
-						@"9F0E"	:	@"eMVIssuerActionCodeDenialField",
-						@"9F0F"	:	@"eMVIssuerActionCodeOnlineField",
-						@"9F10"	:	@"eMVIssuerApplicationDataField",
-						@"9F1A"	:	@"eMVTerminalCountryCodeField",
-						@"9F1E" :	@"eMVInterfaceDeviceSerialNumberField",
-						@"9F26"	:	@"eMVApplicationCryptogramField",
-						@"9F27"	:	@"eMVCryptogramInformationDataField",
-						@"9F33"	:	@"eMVTerminalCapabilitiesField",
-						@"9F34"	:	@"eMVCardholderVerificationMethodResultsField",
-						@"9F35"	:	@"eMVTerminalTypeField",
-						@"9F36"	:	@"eMVApplicationTransactionCounterField",
-						@"9F37"	:	@"eMVUnpredictableNumberField",
-						@"9F41"	:	@"eMVTransactionSequenceCounterIDField",
-						@"9F42"	:	@"eMVApplicationCurrencyCodeField",	//not support yet
-						@"9F53"	:	@"eMVTransactionCategoryCodeField",
-						@"FF1F"	:	@"eMVTrack2Encrypted"
+						@"1001"	:	PROP_NAME(nonEMVPinEntryRequired),	//Pin entry Required Flag. 0: Not required, 1: required
+						@"1002"	:	PROP_NAME(nonEMVSignatureRequired),	//Signature Required Flag. 0: Not required, 1: required
+						@"1003"	:	PROP_NAME(nonEMVConfirmationResponseCode),
+						@"1005"	:	PROP_NAME(nonEMVTransactionType),	//Transaction type. 00 = Purchase. 01 = refund.
+						@"1010"	:	PROP_NAME(nonEMVErrorResponseCode),
+						@"9000"	:	PROP_NAME(nonEMVCardPaymentCode),	//Card Payment Type. A = Debit. B = Credit.
+						@"9001"	:	PROP_NAME(nonEMVCardEntryCode),		//Card Entry Mode. C = Chip entry. D = Contactless EMV entry.
+						@"8A"	:	@"intermediateAuthorizationResponseCode",	// this one isn't really a property, so that macro won't work
+						@"95"	:	PROP_NAME(eMVTerminalVerificationResultsField),
+						@"4F"	:	PROP_NAME(eMVApplicationIdentifierField),
+						@"82"	:	PROP_NAME(eMVApplicationInterchangeProfileField),
+						@"84"	:	PROP_NAME(eMVDedicatedFileNameField),
+						@"9A"	:	PROP_NAME(eMVTransactionDateField),
+						@"9B"	:	PROP_NAME(eMVTransactionStatusInformationField),
+						@"9C"	:	PROP_NAME(eMVCryptogramTransactionTypeField),
+						@"5F28"	:	PROP_NAME(eMVIssuerCountryCodeField),
+						@"5F2A"	:	PROP_NAME(eMVTransactionCurrencyCodeField),
+						@"5F34"	:	PROP_NAME(eMVPanSequenceNumber),
+						@"9F02"	:	PROP_NAME(eMVTransactionAmountField),
+						@"9F07"	:	PROP_NAME(eMVApplicationUsageControlField),
+						@"9F08"	:	PROP_NAME(eMVApplicationVersionNumberField),
+						@"9F0D"	:	PROP_NAME(eMVIssuerActionCodeDefaultField),
+						@"9F0E"	:	PROP_NAME(eMVIssuerActionCodeDenialField),
+						@"9F0F"	:	PROP_NAME(eMVIssuerActionCodeOnlineField),
+						@"9F10"	:	PROP_NAME(eMVIssuerApplicationDataField),
+						@"9F1A"	:	PROP_NAME(eMVTerminalCountryCodeField),
+						@"9F1E" :	PROP_NAME(eMVInterfaceDeviceSerialNumberField),
+						@"9F26"	:	PROP_NAME(eMVApplicationCryptogramField),
+						@"9F27"	:	PROP_NAME(eMVCryptogramInformationDataField),
+						@"9F33"	:	PROP_NAME(eMVTerminalCapabilitiesField),
+						@"9F34"	:	PROP_NAME(eMVCardholderVerificationMethodResultsField),
+						@"9F35"	:	PROP_NAME(eMVTerminalTypeField),
+						@"9F36"	:	PROP_NAME(eMVApplicationTransactionCounterField),
+						@"9F37"	:	PROP_NAME(eMVUnpredictableNumberField),
+						@"9F41"	:	PROP_NAME(eMVTransactionSequenceCounterIDField),
+						@"9F42"	:	PROP_NAME(eMVApplicationCurrencyCodeField),	//not support yet
+						@"9F53"	:	PROP_NAME(eMVTransactionCategoryCodeField),
+						@"FF1F"	:	PROP_NAME(eMVTrack2Encrypted)
 					  };
 	});
 	
