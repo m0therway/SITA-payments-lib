@@ -10,6 +10,8 @@
 #import "EGLoggingDelegate.h"
 #import <RBA_SDK/RBA_SDK.h>
 #import "EGConstants.h"
+#import "EGCardTransactionFactory.h"
+#import "EGEMVTransactionResponse.h"
 
 // logging macros
 #define EGLogError(frmt, ...) [self.loggingDelegate logMessageWithLevel:EGLogLevelError file:__FILE__ function:__PRETTY_FUNCTION__ lineNumber:__LINE__ format:(frmt), ## __VA_ARGS__]
@@ -23,6 +25,8 @@
 
 @property(nonatomic,weak) id<EGLoggingDelegate> loggingDelegate;
 @property(nonatomic,copy) EGTransactionCallback currentTransactionCallback;
+@property(nonatomic,strong) id<EGCardTransaction> currentTransaction;
+@property(nonatomic,strong) EGEMVTransactionResponse* currentEMVResponse;
 
 @end
 
@@ -73,28 +77,14 @@
 {
 	EGLogVerbose(@"do nfc transaction");
 	
-#warning TODO
-	
-	if (callback) {
-		dispatch_async(dispatch_get_main_queue(), ^{
-			NSError* error = [NSError errorWithDomain:EGRBASDKErrorDomain code:0 userInfo:@{NSLocalizedDescriptionKey : @"Not implemented yet"}];
-			callback(error);
-		});
-	}
+	[self doNonEMVCardReadForTransaction:transaction withCallback:callback];
 }
 
 - (void)performEMVTransaction:(id<EGCardTransaction>)transaction withFlightInfo:(id<EGFlightInfo>)flightInfo callback:(EGTransactionCallback)callback
 {
 	EGLogVerbose(@"do emv transaction");
 	
-#warning TODO
-	
-	if (callback) {
-		dispatch_async(dispatch_get_main_queue(), ^{
-			NSError* error = [NSError errorWithDomain:EGRBASDKErrorDomain code:0 userInfo:@{NSLocalizedDescriptionKey : @"Not implemented yet"}];
-			callback(error);
-		});
-	}
+	[self doEMVCardReadForTransaction:transaction withCallback:callback];
 }
 
 #pragma mark - Logging Adapter
@@ -114,55 +104,146 @@
 {
 #warning TODO: how do we know if a message is blocking?
 	
-	EGLogDebug(@"Received message callback: %d", messageId);
-	
+	EGLogVerbose(@"Received message callback: %d", messageId);
 	
 	switch (messageId) {
 		case M23_CARD_READ: {
-			EGLogVerbose(@"Received card read message callback");
-			EGLogVerbose(@"Read card type: %@", [self lastReadCardSource]);
-			NSString* serviceCode = [self getVariable:@"000413" outError:nil];
-			NSError* error = nil;
-			
-#warning TODO: Peter's code stops if the card is invalid OR if it's a chip card. Why?
-			if ([self isCardValidAndMagnetic:serviceCode]) {
-				NSString* exitType = [RBA_SDK GetParam:P23_RES_EXIT_TYPE];
-				
-				if ([exitType isEqualToString:@"0"]) {
-					NSString* track1 = [RBA_SDK GetParam:P23_RES_TRACK1];
-					NSString* track2 = [RBA_SDK GetParam:P23_RES_TRACK2];
-					NSString* track3 = [RBA_SDK GetParam:P23_RES_TRACK3];
-					
-					EGLogVerbose(@"Got track 1 data: %@", track1);
-					EGLogVerbose(@"Got track 2 data: %@", track2);
-					EGLogVerbose(@"Got track 3 data: %@", track3);
-#warning TODO: Add to Payment Report
-				} else {
-					EGLogWarn(@"Got exit type: %@. Aborting.", exitType);
-					error = [NSError errorWithDomain:EGRBASDKErrorDomain code:0 userInfo:@{ NSLocalizedDescriptionKey : @"Invalid exit type." }];
-				}
-			} else {
-				EGLogWarn(@"Invalid or chip card service code: %@. Aborting.", serviceCode);
-				error = [NSError errorWithDomain:EGRBASDKErrorDomain code:0 userInfo:@{ NSLocalizedDescriptionKey : @"Invalid or chip card service code." }];
-			}
-			
-			[self takeRBAOffline];
-			
-			if (self.currentTransactionCallback) {
-				EGTransactionCallback callback = self.currentTransactionCallback;
-				self.currentTransactionCallback = nil;
-				
-				dispatch_async(dispatch_get_main_queue(), ^{
-					callback(error);
-				});
-			}
+			EGLogDebug(@"Received card read message callback");
+			[self handleNonEMVCardReadResponse];
 			
 			break;
 		}
 			
-		default:
+		case M33_02_EMV_TRANSACTION_PREPARATION_RESPONSE: {
+			EGLogDebug(@"Received EMV transaction preparation response");
+			[self handleEMVTransactionPreparationResponse];
+			
+			break;
+		}
+		
+		case M33_03_EMV_AUTHORIZATION_REQUEST: {
+			EGLogDebug(@"Received EMV authorization request");
+			[self handleEMVAuthorizationRequest];
+			
+			break;
+		}
+			
+		case M33_05_EMV_AUTHORIZATION_CONFIRMATION: {
+			EGLogDebug(@"Received EMV authorization confirmation");
+			[self handleEMVAuthorizationConfirmation];
+			
+			break;
+		}
+		
+#warning TODO: handle cancellation (especially for chip card)?
+		
+		default: {
 			EGLogWarn(@"Unhandled message callback: %d", messageId);
 			break;
+		}
+	}
+}
+
+- (void)handleNonEMVCardReadResponse
+{
+	EGLogVerbose(@"Read card type: %@", [self lastReadCardSource]);
+	NSString* serviceCode = [self getVariable:@"000413" outError:nil];
+	NSError* error = nil;
+	
+#warning TODO: Peter's code stops if the card is invalid OR if it's a chip card. Why?
+	if ([self isCardValidAndMagnetic:serviceCode]) {
+		NSString* exitType = [RBA_SDK GetParam:P23_RES_EXIT_TYPE];
+		
+		if ([exitType isEqualToString:@"0"]) {
+			NSString* track1 = [RBA_SDK GetParam:P23_RES_TRACK1];
+			NSString* track2 = [RBA_SDK GetParam:P23_RES_TRACK2];
+			NSString* track3 = [RBA_SDK GetParam:P23_RES_TRACK3];
+			
+			EGLogVerbose(@"Got track 1 data: %@", track1);
+			EGLogVerbose(@"Got track 2 data: %@", track2);
+			EGLogVerbose(@"Got track 3 data: %@", track3);
+#warning TODO: Add to Payment Report
+		} else {
+			EGLogWarn(@"Got exit type: %@. Aborting.", exitType);
+			error = [NSError errorWithDomain:EGRBASDKErrorDomain code:0 userInfo:@{ NSLocalizedDescriptionKey : @"Invalid exit type." }];
+		}
+	} else {
+		EGLogWarn(@"Invalid or chip card service code: %@. Aborting.", serviceCode);
+		error = [NSError errorWithDomain:EGRBASDKErrorDomain code:0 userInfo:@{ NSLocalizedDescriptionKey : @"Invalid or chip card service code." }];
+	}
+	
+	[self takeRBAOffline];
+	
+	if (self.currentTransactionCallback) {
+		EGTransactionCallback callback = self.currentTransactionCallback;
+		self.currentTransactionCallback = nil;
+		self.currentTransaction = nil;
+		
+		dispatch_async(dispatch_get_main_queue(), ^{
+			callback(error);
+		});
+	}
+}
+
+- (void)handleEMVTransactionPreparationResponse
+{
+	self.currentEMVResponse = [[EGEMVTransactionResponse alloc] init];
+	[self.currentEMVResponse updateWithRBAParameter:P33_02_RES_EMV_TAG];
+	[RBA_SDK SetParam:P04_REQ_FORCE_PAYMENT_TYPE data:@"0"];
+	[RBA_SDK SetParam:P04_REQ_PAYMENT_TYPE data:@"B"];
+	[RBA_SDK SetParam:P04_REQ_AMOUNT data:@"000"];
+	[RBA_SDK ProcessMessage:M04_SET_PAYMENT_TYPE];
+	
+	// apparently we need the amount in cents
+	NSInteger centAmount = [[[self.currentTransaction amount] decimalNumberByMultiplyingByPowerOf10:2] integerValue];
+	[RBA_SDK SetParam:P13_REQ_AMOUNT data:[NSString stringWithFormat:@"%ld", centAmount]];
+	[RBA_SDK ProcessMessage:M13_AMOUNT];
+	[RBA_SDK ResetParam:P_ALL_PARAMS];
+	
+	// presumably this triggers another callback to ProcessPinPadParameters?
+}
+
+- (void)handleEMVAuthorizationRequest
+{
+	[RBA_SDK SetParam:P33_04_RES_STATUS data:@"00"];
+	[RBA_SDK SetParam:P33_04_RES_EMVH_CURRENT_PACKET_NBR data:@"0"];
+	[RBA_SDK SetParam:P33_04_RES_EMVH_PACKET_TYPE data:@"0"];
+	[RBA_SDK AddTagParam:M33_04_EMV_AUTHORIZATION_RESPONSE tagid:0x1004 string:@"0"];
+	[RBA_SDK AddTagParam:M33_04_EMV_AUTHORIZATION_RESPONSE tagid:0x8A string:@"00"];
+	[RBA_SDK ProcessMessage:M33_04_EMV_AUTHORIZATION_RESPONSE];
+	
+	[RBA_SDK ResetParam:P_ALL_PARAMS];
+	
+	// presumably this triggers another callback to ProcessPinPadParameters?
+}
+
+- (void)handleEMVAuthorizationConfirmation {
+	[self.currentEMVResponse updateWithRBAParameter:P33_05_RES_EMV_TAG];
+	
+#warning TODO: what is this for?
+//	_emv.EMVApplicationCurrencyCode = _emv.EMVTransactionCurrencyCode   //IJ not supprot yet
+	
+	[RBA_SDK ResetParam:P_ALL_PARAMS];
+	NSError* error = nil;
+	
+	if ([self.currentEMVResponse isOfflineApproved]) {
+#warning TODO: Add to Payment Report
+	} else {
+		EGLogWarn(@"Unexpected confirmation response code: %@. Aborting.", self.currentEMVResponse.nonEMVConfirmationResponseCode);
+		error = [NSError errorWithDomain:EGRBASDKErrorDomain code:0 userInfo:@{ NSLocalizedDescriptionKey : @"Unexpected confirmation response code." }];
+	}
+	
+	[self takeRBAOffline];
+	
+	if (self.currentTransactionCallback) {
+		EGTransactionCallback callback = self.currentTransactionCallback;
+		self.currentTransactionCallback = nil;
+		self.currentTransaction = nil;
+		self.currentEMVResponse = nil;
+		
+		dispatch_async(dispatch_get_main_queue(), ^{
+			callback(error);
+		});
 	}
 }
 
@@ -233,6 +314,19 @@
 	[RBA_SDK Disconnect];
 }
 
+- (NSError*)takeRBAOnline
+{
+	[RBA_SDK SetParam:P01_REQ_APPID data:@"0000"];
+	[RBA_SDK SetParam:P01_REQ_PARAMID data:@"0000"];
+	NSInteger ret = [RBA_SDK ProcessMessage:M01_ONLINE];
+	
+	if(ret == RESULT_SUCCESS) {
+		return nil;
+	} else {
+		return [self errorForRBAResult:ret withDescription:@"Failed to take RBA online"];
+	}
+}
+
 - (NSError*)takeRBAOffline
 {
 	NSInteger ret = [RBA_SDK ProcessMessage:M00_OFFLINE];
@@ -240,7 +334,7 @@
 	if(ret == RESULT_SUCCESS) {
 		return nil;
 	} else {
-		return [self errorForRBAResult:ret withDescription:@"RBA connection failed"];
+		return [self errorForRBAResult:ret withDescription:@"Failed to take RBA offline"];
 	}
 }
 
@@ -264,6 +358,37 @@
 	
 	// write out the new setting
 	error = [self writeConfigurationGroup:@"13" index:@"14" data:@"1"];
+	
+	return error;
+}
+
+- (NSError*)enableSmartCard
+{
+	NSError* error = nil;
+	
+	if ([RBA_SDK GetConnectionStatus] != CONNECTED) {
+		error = [self connectToRBA];
+		
+		if (error) {
+			return error;
+		}
+	}
+	
+	NSString* currentValue = [self readConfigurationGroup:@"19" index:@"1" outError:&error];
+	
+	if (error) {
+		// we'll treat this as non-fatal
+		EGLogError(@"Failed to read current smart card config: %@", error);
+		error = nil;
+	}
+	
+	if ([currentValue integerValue] == 1) {
+		// already set to the right value
+		return nil;
+	}
+	
+	// write out the new setting
+	error = [self writeConfigurationGroup:@"19" index:@"11" data:@"1"];
 	
 	return error;
 }
@@ -415,8 +540,60 @@
 #warning TODO: Peter has 'DisableKeyedIn' here. Is that necessary? What does it do?
 	[self setDevicePrompt:@"This is a prompt"];
 	
+	self.currentTransaction = transaction;
 	self.currentTransactionCallback = callback;
 	[RBA_SDK ProcessMessage:M23_CARD_READ];
+	// we should now get a callback to ProcessPinPadParameters
+}
+
+- (void)doEMVCardReadForTransaction:(id<EGCardTransaction>)transaction withCallback:(EGTransactionCallback)callback
+{
+#warning TODO: do we even want flight info in here? Maybe we should decouple the Payment Service.
+	NSError* error = nil;
+	
+	if ([RBA_SDK GetConnectionStatus] != CONNECTED) {
+		error = [self connectToRBA];
+		
+		if (error) {
+			dispatch_async(dispatch_get_main_queue(), ^{
+				callback(error);
+			});
+			
+			return;
+		}
+	}
+	
+	error = [self enableSmartCard];
+	
+	if (error) {
+		dispatch_async(dispatch_get_main_queue(), ^{
+			callback(error);
+		});
+		
+		return;
+	}
+	
+#warning TODO: Peter has 'DisableKeyedIn' here. Is that necessary? What does it do?
+	error = [self takeRBAOnline];
+	
+	if (error) {
+		dispatch_async(dispatch_get_main_queue(), ^{
+			callback(error);
+		});
+		
+		return;
+	}
+	
+	[RBA_SDK SetParam:P14_REQ_TXN_TYPE data:@"01"];
+	[RBA_SDK ProcessMessage:M14_SET_TXN_TYPE];
+	
+	// apparently we need the amount in cents
+	NSInteger centAmount = [[[transaction amount] decimalNumberByMultiplyingByPowerOf10:2] integerValue];
+	[RBA_SDK SetParam:P13_REQ_AMOUNT data:[NSString stringWithFormat:@"%ld", centAmount]];
+	
+	self.currentTransaction = transaction;
+	self.currentTransactionCallback = callback;
+	[RBA_SDK ProcessMessage:M13_AMOUNT];
 	// we should now get a callback to ProcessPinPadParameters
 }
 

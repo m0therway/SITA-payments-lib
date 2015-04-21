@@ -11,6 +11,8 @@
 		431EA6221AE16D79007BEEB3 /* ExternalAccessory.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 431EA6211AE16D79007BEEB3 /* ExternalAccessory.framework */; };
 		431EA6241AE16E55007BEEB3 /* libc++.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 431EA6231AE16E55007BEEB3 /* libc++.dylib */; };
 		431EA6271AE18646007BEEB3 /* EGConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 431EA6261AE18646007BEEB3 /* EGConstants.m */; };
+		431EA62F1AE57DFD007BEEB3 /* EGEMVTransactionResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 431EA62D1AE57DFD007BEEB3 /* EGEMVTransactionResponse.h */; };
+		431EA6301AE57DFD007BEEB3 /* EGEMVTransactionResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 431EA62E1AE57DFD007BEEB3 /* EGEMVTransactionResponse.m */; };
 		439FC7B11ADF478C00866AE4 /* EGLoggingDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 43D7E2AE1ADDB01D00026E6B /* EGLoggingDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		43D7E2871ADD91D100026E6B /* EGCreditCardHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 43D7E2861ADD91D100026E6B /* EGCreditCardHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		43D7E28D1ADD91D100026E6B /* EGCreditCardHandler.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 43D7E2811ADD91D100026E6B /* EGCreditCardHandler.framework */; };
@@ -43,6 +45,8 @@
 		431EA6231AE16E55007BEEB3 /* libc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libc++.dylib"; path = "usr/lib/libc++.dylib"; sourceTree = SDKROOT; };
 		431EA6251AE1862A007BEEB3 /* EGConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EGConstants.h; sourceTree = "<group>"; };
 		431EA6261AE18646007BEEB3 /* EGConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EGConstants.m; sourceTree = "<group>"; };
+		431EA62D1AE57DFD007BEEB3 /* EGEMVTransactionResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EGEMVTransactionResponse.h; sourceTree = "<group>"; };
+		431EA62E1AE57DFD007BEEB3 /* EGEMVTransactionResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EGEMVTransactionResponse.m; sourceTree = "<group>"; };
 		43D7E2811ADD91D100026E6B /* EGCreditCardHandler.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = EGCreditCardHandler.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		43D7E2851ADD91D100026E6B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		43D7E2861ADD91D100026E6B /* EGCreditCardHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EGCreditCardHandler.h; sourceTree = "<group>"; };
@@ -149,13 +153,15 @@
 				43D7E29F1ADD948200026E6B /* EGCardTransactionFactory.m */,
 				43D7E2A21ADD9E8600026E6B /* EGCardTransactionImpl.h */,
 				43D7E2A31ADD9E8600026E6B /* EGCardTransactionImpl.m */,
+				431EA6251AE1862A007BEEB3 /* EGConstants.h */,
+				431EA6261AE18646007BEEB3 /* EGConstants.m */,
+				431EA62D1AE57DFD007BEEB3 /* EGEMVTransactionResponse.h */,
+				431EA62E1AE57DFD007BEEB3 /* EGEMVTransactionResponse.m */,
 				43D7E2A61ADDA50900026E6B /* EGFlightInfoFactory.h */,
 				43D7E2A71ADDA50900026E6B /* EGFlightInfoFactory.m */,
 				43D7E2AA1ADDA89C00026E6B /* EGFlightInfoImpl.h */,
 				43D7E2AB1ADDA89C00026E6B /* EGFlightInfoImpl.m */,
 				43D7E2AE1ADDB01D00026E6B /* EGLoggingDelegate.h */,
-				431EA6251AE1862A007BEEB3 /* EGConstants.h */,
-				431EA6261AE18646007BEEB3 /* EGConstants.m */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -168,6 +174,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				43D7E2A01ADD948200026E6B /* EGCardTransactionFactory.h in Headers */,
+				431EA62F1AE57DFD007BEEB3 /* EGEMVTransactionResponse.h in Headers */,
 				43D7E2A81ADDA50900026E6B /* EGFlightInfoFactory.h in Headers */,
 				43D7E2B11ADDB13300026E6B /* EGCardReaderManager.h in Headers */,
 				439FC7B11ADF478C00866AE4 /* EGLoggingDelegate.h in Headers */,
@@ -276,6 +283,7 @@
 			files = (
 				43D7E2A51ADD9E8600026E6B /* EGCardTransactionImpl.m in Sources */,
 				431EA6271AE18646007BEEB3 /* EGConstants.m in Sources */,
+				431EA6301AE57DFD007BEEB3 /* EGEMVTransactionResponse.m in Sources */,
 				43D7E2AD1ADDA89C00026E6B /* EGFlightInfoImpl.m in Sources */,
 				43D7E2B21ADDB13300026E6B /* EGCardReaderManager.m in Sources */,
 				43D7E2A11ADD948200026E6B /* EGCardTransactionFactory.m in Sources */,
