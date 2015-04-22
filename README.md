@@ -1,3 +1,3 @@
 # README #
 
-This is the production version of the credit card handling library.
+Payments API for SITA Crew Tablet iOS miniTab app
