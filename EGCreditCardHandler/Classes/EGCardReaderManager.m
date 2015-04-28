@@ -388,7 +388,7 @@
 	}
 	
 	// write out the new setting
-	error = [self writeConfigurationGroup:@"19" index:@"11" data:@"1"];
+	error = [self writeConfigurationGroup:@"19" index:@"1" data:@"1"];
 	
 	return error;
 }
