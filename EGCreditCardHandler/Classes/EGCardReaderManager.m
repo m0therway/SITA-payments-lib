@@ -21,6 +21,64 @@
 #define EGLogVerbose(frmt, ...) [self.loggingDelegate logMessageWithLevel:EGLogLevelVerbose file:__FILE__ function:__PRETTY_FUNCTION__ lineNumber:__LINE__ format:(frmt), ## __VA_ARGS__]
 
 
+// RBA constants
+
+static NSString* const RBA_SERVICE_CODE_VAR = @"000413";
+
+static NSString* const RBA_P04_FORCE_PAYMENT_TYPE_UNCONDITIONAL = @"0";
+static NSString* const RBA_P04_FORCE_PAYMENT_TYPE_CONDITIONAL = @"1";
+
+static NSString* const RBA_P04_PAYMENT_TYPE_DEBIT = @"A";
+static NSString* const RBA_P04_PAYMENT_TYPE_CREDIT = @"B";
+
+static NSString* const RBA_P14_TXN_TYPE_SALE = @"01";
+
+static NSString* const RBA_P33_04_STATUS_VALUE = @"00";
+static NSString* const RBA_P33_04_EMVH_PACKET_TYPE_FIRST_LAST = @"0";
+static const NSInteger RBA_M33_04_HOST_RESPONSE_AVAILABLE_TAG = 0x1004;
+static const NSInteger RBA_M33_04_AUTH_RESPONSE_CODE_TAG = 0x8A;
+
+static NSString* const RBA_PARAMETER_VALUE_YES = @"1";
+static NSString* const RBA_PARAMETER_VALUE_NO = @"0";
+
+static const NSInteger RBA_COMPATIBILITY_FLAG_GROUP = 13;
+static const NSInteger RBA_EMV_FLAG_GROUP = 19;
+
+struct RBA_CONFIG_PARAM {
+	const NSInteger group;
+	const NSInteger index;
+};
+
+static const struct RBA_CONFIG_PARAM RBA_ADD_SOURCE_FIELD_PARAM = { .group = RBA_COMPATIBILITY_FLAG_GROUP, .index = 14 };
+static const struct RBA_CONFIG_PARAM RBA_EMV_TRANS_SUPPORTED_PARAM = { .group = RBA_EMV_FLAG_GROUP, .index = 1 };
+
+typedef enum {
+	RBA_P23_ExitTypeGood = 0,
+	RBA_P23_ExitTypeBad = 1,
+	RBA_P23_ExitTypeCancelled = 2,
+	RBA_P23_ExitTypeButtonPressed = 3,
+	RBA_P23_ExitTypeInvalidPrompt = 6,
+	RBA_P23_ExitTypeEncryptionFailed = 7,
+	RBA_P23_ExitTypeDeclined = 9
+} RBA_P23_ExitType;
+
+typedef enum {
+	RBA_P60_StatusFail = 1,
+	RBA_P60_StatusSuccess = 2,
+	RBA_P60_StatusErrorInvalidID = 3,
+	RBA_P60_StatusErrorParamNotUpdated = 4,
+	RBA_P60_StatusRejectedWrongFormat = 5,
+	RBA_P60_StatusRejectedCannotExecute = 9
+} RBA_P60_Status;
+
+typedef enum {
+	RBA_P29_StatusSuccess = 2,
+	RBA_P29_StatusError = 3,
+	RBA_P29_StatusInsufficientMemory = 4,
+	RBA_P29_StatusInvalidID = 5,
+	RBA_P29_StatusNoData = 6
+} RBA_P29_Status;
+
 @interface EGCardReaderManager () <LogTrace_support, RBA_SDK_Event_support>
 
 @property(nonatomic,weak) id<EGLoggingDelegate> loggingDelegate;
@@ -163,14 +221,14 @@
 - (void)handleNonEMVCardReadResponse
 {
 	EGLogVerbose(@"Read card type: %@", [self lastReadCardSource]);
-	NSString* serviceCode = [self getVariable:@"000413" outError:nil];
+	NSString* serviceCode = [self getVariable:RBA_SERVICE_CODE_VAR outError:nil];
 	NSError* error = nil;
 	
 #warning TODO: Peter's code stops if the card is invalid OR if it's a chip card. Why?
 	if ([self isCardValidAndMagnetic:serviceCode]) {
 		NSString* exitType = [RBA_SDK GetParam:P23_RES_EXIT_TYPE];
 		
-		if ([exitType isEqualToString:@"0"]) {
+		if (exitType.length > 0 && exitType.integerValue == RBA_P23_ExitTypeGood) {
 			NSString* track1 = [RBA_SDK GetParam:P23_RES_TRACK1];
 			NSString* track2 = [RBA_SDK GetParam:P23_RES_TRACK2];
 			NSString* track3 = [RBA_SDK GetParam:P23_RES_TRACK3];
@@ -205,8 +263,8 @@
 {
 	self.currentEMVResponse = [[EGEMVTransactionResponse alloc] init];
 	[self.currentEMVResponse updateWithRBAParameter:P33_02_RES_EMV_TAG];
-	[RBA_SDK SetParam:P04_REQ_FORCE_PAYMENT_TYPE data:@"0"];
-	[RBA_SDK SetParam:P04_REQ_PAYMENT_TYPE data:@"B"];
+	[RBA_SDK SetParam:P04_REQ_FORCE_PAYMENT_TYPE data:RBA_P04_FORCE_PAYMENT_TYPE_UNCONDITIONAL];
+	[RBA_SDK SetParam:P04_REQ_PAYMENT_TYPE data:RBA_P04_PAYMENT_TYPE_CREDIT];
 	[RBA_SDK SetParam:P04_REQ_AMOUNT data:@"000"];
 	[RBA_SDK ProcessMessage:M04_SET_PAYMENT_TYPE];
 	
@@ -216,21 +274,25 @@
 	[RBA_SDK ProcessMessage:M13_AMOUNT];
 	[RBA_SDK ResetParam:P_ALL_PARAMS];
 	
-	// presumably this triggers another callback to ProcessPinPadParameters?
+	// this triggers another callback to ProcessPinPadParameters
 }
 
 - (void)handleEMVAuthorizationRequest
 {
-	[RBA_SDK SetParam:P33_04_RES_STATUS data:@"00"];
+	[RBA_SDK SetParam:P33_04_RES_STATUS data:RBA_P33_04_STATUS_VALUE];
 	[RBA_SDK SetParam:P33_04_RES_EMVH_CURRENT_PACKET_NBR data:@"0"];
-	[RBA_SDK SetParam:P33_04_RES_EMVH_PACKET_TYPE data:@"0"];
-	[RBA_SDK AddTagParam:M33_04_EMV_AUTHORIZATION_RESPONSE tagid:0x1004 string:@"0"];
-	[RBA_SDK AddTagParam:M33_04_EMV_AUTHORIZATION_RESPONSE tagid:0x8A string:@"00"];
+	[RBA_SDK SetParam:P33_04_RES_EMVH_PACKET_TYPE data:RBA_P33_04_EMVH_PACKET_TYPE_FIRST_LAST];
+	[RBA_SDK AddTagParam:M33_04_EMV_AUTHORIZATION_RESPONSE
+				   tagid:RBA_M33_04_HOST_RESPONSE_AVAILABLE_TAG
+				  string:RBA_PARAMETER_VALUE_NO];
+	[RBA_SDK AddTagParam:M33_04_EMV_AUTHORIZATION_RESPONSE
+				   tagid:RBA_M33_04_AUTH_RESPONSE_CODE_TAG
+				  string:@"00"];
 	[RBA_SDK ProcessMessage:M33_04_EMV_AUTHORIZATION_RESPONSE];
 	
 	[RBA_SDK ResetParam:P_ALL_PARAMS];
 	
-	// presumably this triggers another callback to ProcessPinPadParameters?
+	// this triggers another callback to ProcessPinPadParameters
 }
 
 - (void)handleEMVAuthorizationConfirmation {
@@ -359,7 +421,7 @@
 	[self takeRBAOffline];
 	
 	NSError* error = nil;
-	NSString* currentValue = [self readConfigurationGroup:@"13" index:@"14" outError:&error];
+	NSString* currentValue = [self readConfigurationParameter:RBA_ADD_SOURCE_FIELD_PARAM outError:&error];
 	
 	if (error) {
 		// we'll treat this as non-fatal
@@ -367,13 +429,13 @@
 		error = nil;
 	}
 	
-	if ([currentValue integerValue] == 1) {
+	if (currentValue.integerValue == RBA_PARAMETER_VALUE_YES.integerValue) {
 		// already set to the right value
 		return nil;
 	}
 	
 	// write out the new setting
-	error = [self writeConfigurationGroup:@"13" index:@"14" data:@"1"];
+	error = [self writeConfigurationParameter:RBA_ADD_SOURCE_FIELD_PARAM data:RBA_PARAMETER_VALUE_YES];
 	
 	return error;
 }
@@ -390,7 +452,7 @@
 		}
 	}
 	
-	NSString* currentValue = [self readConfigurationGroup:@"19" index:@"1" outError:&error];
+	NSString* currentValue = [self readConfigurationParameter:RBA_EMV_TRANS_SUPPORTED_PARAM outError:&error];
 	
 	if (error) {
 		// we'll treat this as non-fatal
@@ -398,23 +460,23 @@
 		error = nil;
 	}
 	
-	if ([currentValue integerValue] == 1) {
+	if (currentValue.integerValue == RBA_PARAMETER_VALUE_YES.integerValue) {
 		// already set to the right value
 		return nil;
 	}
 	
 	// write out the new setting
-	error = [self writeConfigurationGroup:@"19" index:@"1" data:@"1"];
+	error = [self writeConfigurationParameter:RBA_EMV_TRANS_SUPPORTED_PARAM data:RBA_PARAMETER_VALUE_YES];
 	
 	return error;
 }
 
-- (NSError*)writeConfigurationGroup:(NSString*)group index:(NSString*)index data:(NSString*)data
+- (NSError*)writeConfigurationParameter:(struct RBA_CONFIG_PARAM)parameter data:(NSString*)data
 {
-	EGLogDebug(@"CONFIGURATION WRITE %@_%@ =%@",group,index,data);
+	EGLogDebug(@"CONFIGURATION WRITE %ld_%ld =%@", parameter.group, parameter.index, data);
 	
-	[RBA_SDK SetParam:P60_REQ_GROUP_NUM data:group];
-	[RBA_SDK SetParam:P60_REQ_INDEX_NUM data:index];
+	[RBA_SDK SetParam:P60_REQ_GROUP_NUM data:@(parameter.group).stringValue];
+	[RBA_SDK SetParam:P60_REQ_INDEX_NUM data:@(parameter.index).stringValue];
 	[RBA_SDK SetParam:P60_REQ_DATA_CONFIG_PARAM data:data];
 	
 	NSInteger result = [RBA_SDK ProcessMessage:M60_CONFIGURATION_WRITE];
@@ -424,7 +486,7 @@
 	} else {
 		NSString* status = [RBA_SDK GetParam:P60_RES_STATUS];
 		
-		if( [status isEqualToString:@"2"] ) {
+		if(status.integerValue == RBA_P60_StatusSuccess) {
 			return nil;
 		} else {
 			NSString* desc = [NSString stringWithFormat:@"Failed to write configuration. Status code: %@", status];
@@ -433,12 +495,12 @@
 	}
 }
 
-- (NSString*)readConfigurationGroup:(NSString*)group index:(NSString*)index outError:(NSError**)outError
+- (NSString*)readConfigurationParameter:(struct RBA_CONFIG_PARAM)parameter outError:(NSError**)outError
 {
 	NSString* data = nil;
 	// set parameters
-	[RBA_SDK SetParam:P61_REQ_GROUP_NUM data:group];
-	[RBA_SDK SetParam:P61_REQ_INDEX_NUM data:index];
+	[RBA_SDK SetParam:P61_REQ_GROUP_NUM data:@(parameter.group).stringValue];
+	[RBA_SDK SetParam:P61_REQ_INDEX_NUM data:@(parameter.index).stringValue];
 	
 	NSInteger result = [RBA_SDK ProcessMessage:M61_CONFIGURATION_READ];
 	
@@ -456,7 +518,7 @@
 		
 		EGLogDebug(@"CONFIGURATION READ %@_%@ = %@",[RBA_SDK GetParam:P61_RES_GROUP_NUM],[RBA_SDK GetParam:P61_RES_INDEX_NUM],data);
 		
-		if(![status isEqualToString:@"2"] && outError) {
+		if(status.integerValue != RBA_P60_StatusSuccess && outError) {
 			NSString* desc = [NSString stringWithFormat:@"Failed to read configuration. Status code: %@", status];
 			*outError = [self errorForRBAResult:result withDescription:desc];
 		}
@@ -478,23 +540,23 @@
 			*outError = [self errorForRBAResult:result withDescription:@"Failed to send GET_VARIABLE message"];
 		}
 	} else {
-		NSString* status = [RBA_SDK GetParam:P29_RES_STATUS];
+		NSInteger status = [RBA_SDK GetParam:P29_RES_STATUS].integerValue;
 		
-		if( [status isEqualToString:@"2"] ) {                       // OK
+		if (status == RBA_P29_StatusSuccess) {                       // OK
 			EGLogVerbose(@"Got P29_RES_STATUS = 2 (OK)");
 			value = [RBA_SDK GetParam:P29_RES_VARIABLE_DATA];
 		}
-		else if( [status isEqualToString:@"6"] ) {                  // Empty
+		else if (status == RBA_P29_StatusNoData) {                  // Empty
 			EGLogVerbose(@"Got P29_RES_STATUS = 2 (EMPTY)");
 			value = nil;
 		}
 		else {                                                      // Error
 			if (outError) {
-				NSString* desc =[NSString stringWithFormat:@"Error in P29_RES_STATUS response: %@", status];
+				NSString* desc =[NSString stringWithFormat:@"Error in P29_RES_STATUS response: %ld", status];
 				*outError = [self errorForRBAResult:result withDescription:desc];
 			}
 			
-			EGLogWarn(@"Got P29_RES_STATUS = %@ (ERROR)", status);
+			EGLogWarn(@"Got P29_RES_STATUS = %ld (ERROR)", status);
 			EGLogWarn(@"Got P29_RES_VARIABLE_ID = %@", [RBA_SDK GetParam:P29_RES_VARIABLE_ID]);
 			EGLogWarn(@"Got P29_RES_VARIABLE_DATA = %@", [RBA_SDK GetParam:P29_RES_VARIABLE_DATA]);
 		}
@@ -600,7 +662,7 @@
 		return;
 	}
 	
-	[RBA_SDK SetParam:P14_REQ_TXN_TYPE data:@"01"];
+	[RBA_SDK SetParam:P14_REQ_TXN_TYPE data:RBA_P14_TXN_TYPE_SALE];
 	[RBA_SDK ProcessMessage:M14_SET_TXN_TYPE];
 	
 	// apparently we need the amount in cents
