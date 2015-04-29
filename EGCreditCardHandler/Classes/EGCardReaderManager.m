@@ -44,6 +44,8 @@
 		
 		[LogTrace SetDelegate:self];
 		[LogTrace SetDefaultLogLevel:LTL_TRACE];
+		[LogTrace SetTraceOutputFormatOption:LOFO_NO_DATE];
+		[LogTrace SetTraceOutputFormatOption:LOFO_NO_INSTANCE_ID];
 		
 		NSInteger result = [RBA_SDK Initialize];
 		
@@ -95,7 +97,21 @@
  */
 - (void)LogTraceOut:(NSString *)line
 {
-	EGLogInfo(@"%@", line);
+	EGLogLevel level = EGLogLevelVerbose;
+	
+	if ([line hasPrefix:@"[E"]) {
+		level = EGLogLevelError;
+	} else if ([line hasPrefix:@"[W"]) {
+		level = EGLogLevelWarn;
+	} else if ([line hasPrefix:@"[I"]) {
+		level = EGLogLevelInfo;
+	} else if ([line hasPrefix:@"[T"]) {
+		level = EGLogLevelDebug; // their oddly named 'trace' seems to map to our 'debug'
+	}
+	
+	line = [line substringFromIndex:8];
+	
+	[self.loggingDelegate logMessageWithLevel:level file:nil function:nil lineNumber:0 format:@"%@", line];
 }
 
 #pragma mark - RBA_SDK_Event_support
