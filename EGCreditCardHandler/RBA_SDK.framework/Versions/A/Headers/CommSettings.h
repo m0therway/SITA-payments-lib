@@ -194,6 +194,18 @@ typedef struct TAG_SETTINGS_USB_HID
 } SETTINGS_USB_HID;
 
 /**
+	Information about Accessory communication, to be initialized by the application.
+ 
+	\aboutConnecting
+ */
+typedef struct TAG_SETTINGS_ACCESSORY
+{
+    //!	The Serial Number of the device.
+    char serialNumber[20 + 1];
+    
+} SETTINGS_ACCESSORY;
+
+/**
 	Settings for controlling communication timeouts.
 	
 	\note All timeout values are in milliseconds.
@@ -270,6 +282,13 @@ typedef struct TAG_SETTINGS_COMMUNICATION
 	 *  \details Used when the communication mode is set to \ref BLUETOOTH_INTERFACE.
 	 */		
     SETTINGS_BT         bt_config;
+    
+    /**	Settings for a Bluetooth connection.
+     *
+     *  \details Used when the communication mode is set to \ref ACCESSORY_INTERFACE.
+     */		
+    SETTINGS_ACCESSORY  accessory_config;
+    
 } SETTINGS_COMMUNICATION;
 
 /**	Whether the battery is charging or discharging.

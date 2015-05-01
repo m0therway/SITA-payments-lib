@@ -607,7 +607,7 @@ else {
 	 *  
 	 *  It is also possible to use <b>RBA_SDK_SendCustomMessage</b> to send a request for a supported message
 	 *  ID to be received. In this case, the \libraryName will recognize the  response as a supported message.
-     *  You can then use \ref RBA_SDK_GetParam to retrieve the parameters using the supported parameter IDs.
+     *  You can then use \ref RBA_SDK_GetParam to retrieve the parameters using the supported parameter IDs or RAW_PINPAD_RESPONSE_DATA.
 	 *  
 	 *	\aboutMessaging
 	 *

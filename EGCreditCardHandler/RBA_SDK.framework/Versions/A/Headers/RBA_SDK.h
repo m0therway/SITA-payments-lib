@@ -146,7 +146,7 @@
 		
 	\note The communication settings used by your application must match the configuration of the device being used. In other words, you cannot configure the RBA SDK to communicate via Ethernet if the device is configured to use a serial connection.
 		
-	After the library establishes a connection and end to end and communication is possible, the library calls the application's connected callback method. For more information, see the \ref EnableNotifyRbaConnectDisconnect:) method and the \ref RBA_SDK_Event_support#RBA_Connected and \ref RBA_SDK_Event_support#RBA_Disconnected methods.
+	After the library establishes a connection and end to end and communication is possible, the library calls the application's connected callback method. For more information, see the \ref EnableNotifyRbaConnect:) method and the \ref RBA_SDK_Event_support#RBA_Connected and \ref RBA_SDK_Event_support#RBA_Disconnected methods.
 
 	\aboutConnecting
 
@@ -158,7 +158,7 @@
 	\sa GetConnectionStatus
 	\sa RBA_SDK_Initialize
 	\sa SetCommTimeouts:
-	\sa EnableNotifyRbaConnectDisconnect:
+	\sa EnableNotifyRbaConnect:
  */
 + (NSInteger) Connect:(SETTINGS_COMMUNICATION) settings;
 
@@ -678,7 +678,23 @@ if( [RBA_SDK GetTagParamLen:M33_05_EMV_AUTHORIZATION_CONFIRMATION] <= 0 )
 	\sa Connect:
 	\sa GetConnectionStatus
  */ 
-+ (void) EnableNotifyRbaConnectDisconnect:(bool) enable;
++ (void) EnableNotifyRbaConnect:(bool) enable;
+/**
+	Sets whether a callback delegate will be called when the library establishes or terminates a connection that allows end-to-end communication with a PIN pad device.
+	
+	The device is not ready for communication until the library calls the callback delegate or the library returns the \ref CONNECTED value from the \ref RBA_SDK_GetConnectionStatus function.
+	
+	The callback delegate is set using the \ref SetDelegate: method.
+ 
+	\cppThreadWarning
+ 
+	\param[in] enable If \b true, then callback delegate is called when the library establishes or terminates a connection; if \b false, then no callback delegate is called.
+ 
+	\sa SetDelegate:
+	\sa Connect:
+	\sa GetConnectionStatus
+ */
++ (void) EnableNotifyRbaDisconnect:(bool) enable;
 
 @end
 

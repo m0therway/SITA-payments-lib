@@ -13,6 +13,10 @@
 //! Process message timeout
 //!\var	PROCESS_MESSAGE_TIMEOUT_SEC
 //!\brief		Maximum timeout for the processing one message, in seconds
+//!
+//! Discover Service
+//!\var	DISCOVER_SERVICE_UDP_PORT
+//!\brief		UDP port to send broadcast messages. The same port uses for listening response
 
 enum RBA_SDK_ATTRIBUTE_ID {
 
@@ -48,10 +52,8 @@ enum RBA_SDK_ATTRIBUTE_ID {
 //Process message timeout
 	PROCESS_MESSAGE_TIMEOUT_SEC = 9,
 
-//! \cond PRIVATE
-//Test API
-	TEST_API_SAVE_REQ_RES_IN_RAW_DATA = 10,
-//! \endcond
+//Discover Service
+	DISCOVER_SERVICE_UDP_PORT = 10,
 
 //! \cond PRIVATE
 //Last Attribute for internal use
