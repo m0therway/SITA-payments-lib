@@ -1,12 +1,12 @@
 //
-//  EGEMVTransactionResponse.m
+//  EGEMVTransactionResultImpl.m
 //  EGCreditCardHandler
 //
 //  Created by Nate Petersen on 4/20/15.
 //  Copyright (c) 2015 eGate Solutions. All rights reserved.
 //
 
-#import "EGEMVTransactionResponse.h"
+#import "EGEMVTransactionResultImpl.h"
 #import <RBA_SDK/RBA_SDK.h>
 
 /*
@@ -16,7 +16,7 @@
 
 #define PROP_NAME(arg) NSStringFromSelector(@selector(arg))
 
-@interface EGEMVTransactionResponse ()
+@interface EGEMVTransactionResultImpl ()
 
 @property(nonatomic,copy) NSString* eMVTrack2Encrypted;
 @property(nonatomic,copy) NSString* eMVApplicationIdentifierField;
@@ -65,7 +65,7 @@
 
 @end
 
-@implementation EGEMVTransactionResponse
+@implementation EGEMVTransactionResultImpl
 
 - (BOOL)isOfflineApproved
 {
@@ -97,7 +97,7 @@
 	if ([paramArray count] == 3) {
 		NSString* tag = [paramArray[0] substringFromIndex:1];
 		NSString* data = [paramArray[2] substringFromIndex:1];
-		NSString* propName = [EGEMVTransactionResponse propertyNameForTag:tag];
+		NSString* propName = [EGEMVTransactionResultImpl propertyNameForTag:tag];
 		
 		if (propName) {
 			[self setValue:data forKey:propName];
@@ -109,7 +109,13 @@
 
 - (void)setIntermediateAuthorizationResponseCode:(NSString*)intermediateARC
 {
-	self.eMVAuthorizationResponseCodeField = [EGEMVTransactionResponse arcForIntermediateARC:intermediateARC];
+	self.eMVAuthorizationResponseCodeField = [EGEMVTransactionResultImpl arcForIntermediateARC:intermediateARC];
+}
+
+- (void)setEMVTrack2Encrypted:(NSString *)eMVTrack2Encrypted
+{
+	_eMVTrack2Encrypted = eMVTrack2Encrypted;
+	self.cardTrackData = eMVTrack2Encrypted;
 }
 
 + (NSString*)arcForIntermediateARC:(NSString*)intermediateARC

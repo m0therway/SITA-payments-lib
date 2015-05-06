@@ -11,12 +11,13 @@
 @protocol EGCardTransaction;
 @protocol EGFlightInfo;
 @protocol EGLoggingDelegate;
+@protocol EGTransactionResult;
 
 /**
  * A callback that is executed when a transaction is complete.
  * If an error occurs, the error parameter will be non-nil.
  */
-typedef void (^EGTransactionCallback)(NSError* error);
+typedef void (^EGTransactionCallback)(id<EGTransactionResult> transactionResult, NSError* error);
 
 /**
  * A manager responsible for interacting with the card reader device.
@@ -39,29 +40,26 @@ typedef void (^EGTransactionCallback)(NSError* error);
  * This is an asynchronous operation.
  *
  * @param transaction An EGCardTransaction representing the desired transaction.
- * @param flightInfo An EGFlightInfo representing the current flight.
  * @param callback A block that will be executed when the transaction completes.
  */
-- (void)performSwipeTransaction:(id<EGCardTransaction>)transaction withFlightInfo:(id<EGFlightInfo>)flightInfo callback:(EGTransactionCallback)callback;
+- (void)performSwipeTransaction:(id<EGCardTransaction>)transaction withCallback:(EGTransactionCallback)callback;
 
 /**
  * Requests that the card reader perform an NFC transaction.
  * This is an asynchronous operation.
  *
  * @param transaction An EGCardTransaction representing the desired transaction.
- * @param flightInfo An EGFlightInfo representing the current flight.
  * @param callback A block that will be executed when the transaction completes.
  */
-- (void)performNFCTransaction:(id<EGCardTransaction>)transaction withFlightInfo:(id<EGFlightInfo>)flightInfo callback:(EGTransactionCallback)callback;
+- (void)performNFCTransaction:(id<EGCardTransaction>)transaction withCallback:(EGTransactionCallback)callback;
 
 /**
  * Requests that the card reader perform an EMV (i.e., chip and PIN) transaction.
  * This is an asynchronous operation.
  *
  * @param transaction An EGCardTransaction representing the desired transaction.
- * @param flightInfo An EGFlightInfo representing the current flight.
  * @param callback A block that will be executed when the transaction completes.
  */
-- (void)performEMVTransaction:(id<EGCardTransaction>)transaction withFlightInfo:(id<EGFlightInfo>)flightInfo callback:(EGTransactionCallback)callback;
+- (void)performEMVTransaction:(id<EGCardTransaction>)transaction withCallback:(EGTransactionCallback)callback;
 
 @end

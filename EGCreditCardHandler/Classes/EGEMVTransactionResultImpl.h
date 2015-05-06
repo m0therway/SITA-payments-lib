@@ -1,5 +1,5 @@
 //
-//  EGEMVTransactionResponse.h
+//  EGEMVTransactionResultImpl.h
 //  EGCreditCardHandler
 //
 //  Created by Nate Petersen on 4/20/15.
@@ -7,8 +7,10 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "EGTransactionResultImpl.h"
+#import <EGPaymentService/EGEMVTransactionResult.h>
 
-@interface EGEMVTransactionResponse : NSObject
+@interface EGEMVTransactionResultImpl : EGTransactionResultImpl <EGEMVTransactionResult>
 
 @property(nonatomic,copy,readonly) NSString* eMVTrack2Encrypted;
 @property(nonatomic,copy,readonly) NSString* eMVApplicationIdentifierField;

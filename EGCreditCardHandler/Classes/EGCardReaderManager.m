@@ -11,7 +11,7 @@
 #import <RBA_SDK/RBA_SDK.h>
 #import "EGConstants.h"
 #import "EGCardTransactionFactory.h"
-#import "EGEMVTransactionResponse.h"
+#import "EGEMVTransactionResultImpl.h"
 
 // logging macros
 #define EGLogError(frmt, ...) [self.loggingDelegate logMessageWithLevel:EGLogLevelError file:__FILE__ function:__PRETTY_FUNCTION__ lineNumber:__LINE__ format:(frmt), ## __VA_ARGS__]
@@ -84,7 +84,7 @@ typedef enum {
 @property(nonatomic,weak) id<EGLoggingDelegate> loggingDelegate;
 @property(nonatomic,copy) EGTransactionCallback currentTransactionCallback;
 @property(nonatomic,strong) id<EGCardTransaction> currentTransaction;
-@property(nonatomic,strong) EGEMVTransactionResponse* currentEMVResponse;
+@property(nonatomic,strong) EGEMVTransactionResultImpl* currentEMVResponse;
 
 @end
 
@@ -114,8 +114,6 @@ typedef enum {
 		} else {
 			EGLogInfo(@"RBA SDK initialized.");
 			[RBA_SDK SetDelegate:self];
-			
-#warning TODO: payment service?
 		}
 	}
 	
@@ -126,21 +124,21 @@ typedef enum {
 	[self disconnectFromRBA];
 }
 
-- (void)performSwipeTransaction:(id<EGCardTransaction>)transaction withFlightInfo:(id<EGFlightInfo>)flightInfo callback:(EGTransactionCallback)callback
+- (void)performSwipeTransaction:(id<EGCardTransaction>)transaction withCallback:(EGTransactionCallback)callback
 {
 	EGLogVerbose(@"do swipe transaction");
 	
 	[self doNonEMVCardReadForTransaction:transaction withCallback:callback];
 }
 
-- (void)performNFCTransaction:(id<EGCardTransaction>)transaction withFlightInfo:(id<EGFlightInfo>)flightInfo callback:(EGTransactionCallback)callback
+- (void)performNFCTransaction:(id<EGCardTransaction>)transaction withCallback:(EGTransactionCallback)callback
 {
 	EGLogVerbose(@"do nfc transaction");
 	
 	[self doNonEMVCardReadForTransaction:transaction withCallback:callback];
 }
 
-- (void)performEMVTransaction:(id<EGCardTransaction>)transaction withFlightInfo:(id<EGFlightInfo>)flightInfo callback:(EGTransactionCallback)callback
+- (void)performEMVTransaction:(id<EGCardTransaction>)transaction withCallback:(EGTransactionCallback)callback
 {
 	EGLogVerbose(@"do emv transaction");
 	
@@ -223,6 +221,7 @@ typedef enum {
 	EGLogVerbose(@"Read card type: %@", [self lastReadCardSource]);
 	NSString* serviceCode = [self getVariable:RBA_SERVICE_CODE_VAR outError:nil];
 	NSError* error = nil;
+	EGTransactionResultImpl* transactionResult = nil;
 	
 #warning TODO: Peter's code stops if the card is invalid OR if it's a chip card. Why?
 	if ([self isCardValidAndMagnetic:serviceCode]) {
@@ -236,7 +235,9 @@ typedef enum {
 			EGLogVerbose(@"Got track 1 data: %@", track1);
 			EGLogVerbose(@"Got track 2 data: %@", track2);
 			EGLogVerbose(@"Got track 3 data: %@", track3);
-#warning TODO: Add to Payment Report
+			
+#warning TODO: can the amount change? Like with cash back?
+			transactionResult = [[EGTransactionResultImpl alloc] initWithCardTransaction:self.currentTransaction trackData:track3 finalAmount:self.currentTransaction.amount];
 		} else {
 			EGLogWarn(@"Got exit type: %@. Aborting.", exitType);
 			error = [NSError errorWithDomain:EGRBASDKErrorDomain code:0 userInfo:@{ NSLocalizedDescriptionKey : @"Invalid exit type." }];
@@ -254,14 +255,15 @@ typedef enum {
 		self.currentTransaction = nil;
 		
 		dispatch_async(dispatch_get_main_queue(), ^{
-			callback(error);
+			callback(transactionResult, error);
 		});
 	}
 }
 
 - (void)handleEMVTransactionPreparationResponse
 {
-	self.currentEMVResponse = [[EGEMVTransactionResponse alloc] init];
+#warning TODO: can the amount change?
+	self.currentEMVResponse = [[EGEMVTransactionResultImpl alloc] initWithCardTransaction:self.currentTransaction trackData:nil finalAmount:self.currentTransaction.amount];
 	[self.currentEMVResponse updateWithRBAParameter:P33_02_RES_EMV_TAG];
 	[RBA_SDK SetParam:P04_REQ_FORCE_PAYMENT_TYPE data:RBA_P04_FORCE_PAYMENT_TYPE_UNCONDITIONAL];
 	[RBA_SDK SetParam:P04_REQ_PAYMENT_TYPE data:RBA_P04_PAYMENT_TYPE_CREDIT];
@@ -269,8 +271,7 @@ typedef enum {
 	[RBA_SDK ProcessMessage:M04_SET_PAYMENT_TYPE];
 	
 	// apparently we need the amount in cents
-	NSInteger centAmount = [[[self.currentTransaction amount] decimalNumberByMultiplyingByPowerOf10:2] integerValue];
-	[RBA_SDK SetParam:P13_REQ_AMOUNT data:[NSString stringWithFormat:@"%ld", centAmount]];
+	[RBA_SDK SetParam:P13_REQ_AMOUNT data:[self centStringForDecimalNumber:[self.currentTransaction amount]]];
 	[RBA_SDK ProcessMessage:M13_AMOUNT];
 	[RBA_SDK ResetParam:P_ALL_PARAMS];
 	
@@ -319,13 +320,26 @@ typedef enum {
 		self.currentTransaction = nil;
 		self.currentEMVResponse = nil;
 		
+		EGEMVTransactionResultImpl* result = nil;
+		
+		// amke sure we don't return a partially completed transaction
+		if (!error) {
+			result = self.currentEMVResponse;
+		}
+		
 		dispatch_async(dispatch_get_main_queue(), ^{
-			callback(error);
+			callback(result, error);
 		});
 	}
 }
 
 #pragma mark - RBA handling
+
+- (NSString*)centStringForDecimalNumber:(NSDecimalNumber*)number
+{
+	NSInteger centAmount = [[number decimalNumberByMultiplyingByPowerOf10:2] integerValue];
+	return [NSString stringWithFormat:@"%ld", (long)centAmount];
+}
 
 - (NSError*)errorForRBAResult:(NSInteger)result withDescription:(NSString*)description
 {
@@ -552,7 +566,7 @@ typedef enum {
 		}
 		else {                                                      // Error
 			if (outError) {
-				NSString* desc =[NSString stringWithFormat:@"Error in P29_RES_STATUS response: %ld", status];
+				NSString* desc =[NSString stringWithFormat:@"Error in P29_RES_STATUS response: %ld", (long)status];
 				*outError = [self errorForRBAResult:result withDescription:desc];
 			}
 			
@@ -590,7 +604,6 @@ typedef enum {
 
 - (void)doNonEMVCardReadForTransaction:(id<EGCardTransaction>)transaction withCallback:(EGTransactionCallback)callback
 {
-#warning TODO: do we even want flight info in here? Maybe we should decouple the Payment Service.
 	NSError* error = nil;
 	
 	if ([RBA_SDK GetConnectionStatus] != CONNECTED) {
@@ -598,7 +611,7 @@ typedef enum {
 		
 		if (error) {
 			dispatch_async(dispatch_get_main_queue(), ^{
-				callback(error);
+				callback(nil, error);
 			});
 			
 			return;
@@ -609,7 +622,7 @@ typedef enum {
 	
 	if (error) {
 		dispatch_async(dispatch_get_main_queue(), ^{
-			callback(error);
+			callback(nil, error);
 		});
 		
 		return;
@@ -626,7 +639,6 @@ typedef enum {
 
 - (void)doEMVCardReadForTransaction:(id<EGCardTransaction>)transaction withCallback:(EGTransactionCallback)callback
 {
-#warning TODO: do we even want flight info in here? Maybe we should decouple the Payment Service.
 	NSError* error = nil;
 	
 	if ([RBA_SDK GetConnectionStatus] != CONNECTED) {
@@ -634,7 +646,7 @@ typedef enum {
 		
 		if (error) {
 			dispatch_async(dispatch_get_main_queue(), ^{
-				callback(error);
+				callback(nil, error);
 			});
 			
 			return;
@@ -645,7 +657,7 @@ typedef enum {
 	
 	if (error) {
 		dispatch_async(dispatch_get_main_queue(), ^{
-			callback(error);
+			callback(nil, error);
 		});
 		
 		return;
@@ -656,7 +668,7 @@ typedef enum {
 	
 	if (error) {
 		dispatch_async(dispatch_get_main_queue(), ^{
-			callback(error);
+			callback(nil, error);
 		});
 		
 		return;
@@ -666,8 +678,7 @@ typedef enum {
 	[RBA_SDK ProcessMessage:M14_SET_TXN_TYPE];
 	
 	// apparently we need the amount in cents
-	NSInteger centAmount = [[[transaction amount] decimalNumberByMultiplyingByPowerOf10:2] integerValue];
-	[RBA_SDK SetParam:P13_REQ_AMOUNT data:[NSString stringWithFormat:@"%ld", centAmount]];
+	[RBA_SDK SetParam:P13_REQ_AMOUNT data:[self centStringForDecimalNumber:[transaction amount]]];
 	
 	self.currentTransaction = transaction;
 	self.currentTransactionCallback = callback;

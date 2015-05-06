@@ -7,14 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-
-/**
- * The type of transaction being processed.
- */
-typedef enum {
-	EGCardTransactionTypePurchase,
-	EGCardTransactionTypeRefund
-} EGCardTransactionType;
+#import <EGPaymentService/EGTransactionResult.h>
 
 //typedef enum {
 //	EGCardReadTypeSwipe,
